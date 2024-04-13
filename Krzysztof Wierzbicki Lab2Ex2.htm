@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS424 Lab 2 Exercise 2</title>
+<style>
+    body {
+        background-color: #DDDDDD;
+        user-select: none;
+    }
+    canvas {
+        background-color: white;
+        display: block;
+        border: 2px solid black;
+    }
+</style>
+</head>
+<body>
+    <h2>CS424 Lab 2 Exercise 2</h2>
+
+    <p>
+        <b>Color:</b>
+        <select id="colorChoice">
+            <option value="0">Random</option>
+            <option value="#FF0000">Red</option>
+            <option value="#00FF00">Green</option>
+            <option value="#0000FF">Blue</option>
+            <option value="#800080">Purple</option>
+        </select>
+        <b>Shape:</b>
+        <select id="shapeChoice">
+            <option value="square">Square</option>
+            <option value="polygon">16-sided Polygon</option>
+        </select>
+        <button onclick="clearCanvas()">Clear</button>
+    </p>
+
+    <canvas id="canvas" width="800" height="600">Canvas not supported.</canvas>
+
+    <script>
+        "use strict";
+
+        let canvas;
+        let graphics;
+
+        function randomColorString() {
+            const r = Math.floor(256 * Math.random());
+            const g = Math.floor(256 * Math.random());
+            const b = Math.floor(256 * Math.random());
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function addGraphicsContextExtras(graphics) {
+            // Dodaj dodatkowe funkcje do kontekstu graficznego, jeśli to konieczne.
+        }
+
+        function installMouseHandler() {
+            let dragging = false;
+            let startX, startY;
+            let colorChoice, shapeChoice;
+
+            function handleMouseDown(evt) {
+                if (evt.button !== 0 || dragging) return;
+
+                const rect = canvas.getBoundingClientRect();
+                startX = evt.clientX - rect.left;
+                startY = evt.clientY - rect.top;
+                dragging = true;
+                shapeChoice = document.getElementById("shapeChoice").value;
+                colorChoice = document.getElementById("colorChoice").value;
+
+                document.addEventListener("mousemove", handleMouseMove, false);
+                document.addEventListener("mouseup", handleMouseUp, false);
+            }
+
+            function handleMouseMove(evt) {
+                if (!dragging) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = evt.clientX - rect.left;
+                const y = evt.clientY - rect.top;
+
+                graphics.fillStyle = colorChoice === "0" ? randomColorString() : colorChoice;
+
+                if (shapeChoice === "square") {
+                    graphics.fillRect(x - 20, y - 20, 40, 40);
+                } else if (shapeChoice === "polygon") {
+                    drawPolygon(x, y, 16, 20); // Zmiana na 16-sided polygon
+                }
+            }
+
+            function handleMouseUp() {
+                if (!dragging) return;
+
+                dragging = false;
+                document.removeEventListener("mousemove", handleMouseMove, false);
+                document.removeEventListener("mouseup", handleMouseUp, false);
+            }
+
+            canvas.addEventListener("mousedown", handleMouseDown, false);
+        }
+
+        function drawPolygon(x, y, sides, radius) {
+            const step = Math.PI * 2 / sides;
+            graphics.beginPath();
+            graphics.moveTo(x + radius * Math.cos(0), y + radius * Math.sin(0));
+
+            for (let i = 1; i <= sides; i++) {
+                graphics.lineTo(x + radius * Math.cos(i * step), y + radius * Math.sin(i * step));
+            }
+
+            graphics.closePath();
+            graphics.fill();
+        }
+
+        function clearCanvas() {
+            graphics.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function init() {
+            canvas = document.getElementById("canvas");
+
+            if (canvas.getContext) {
+                graphics = canvas.getContext("2d");
+                addGraphicsContextExtras(graphics);
+                installMouseHandler();
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
